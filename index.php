@@ -45,7 +45,7 @@ for ($n=$start; $n < 1000000; $n++) {
 
 		$multiCurl[$i] = curl_init();
 
-		curl_setopt($multiCurl[$i], CURLOPT_URL, "https://a836-pts-access.nyc.gov/care/datalets/datalet.aspx?mode=acc_hist_det&UseSearch=no&pin=" . $boro . $block . $lot);
+		curl_setopt($multiCurl[$i], CURLOPT_URL, "https://a836-pts-access.nyc.gov/care/datalets/datalet.aspx?mode=asmt_fin_2020&UseSearch=no&pin=" . $boro . $block . $lot);
 		curl_setopt($multiCurl[$i], CURLOPT_RETURNTRANSFER, 1);
 		curl_setopt($multiCurl[$i], CURLOPT_CUSTOMREQUEST, 'GET');
 		curl_setopt($multiCurl[$i], CURLOPT_ENCODING, 'gzip, deflate');
@@ -79,22 +79,22 @@ for ($n=$start; $n < 1000000; $n++) {
 		//may set faster 500000 = half sec
 		//usleep(5000000);
 		$crawler = new Crawler($result[$k]);
-		$buildingClass = $crawler->filter('#Profile > tr:nth-child(1) > td.DataletData')->text();
-		$taxClass = trimmy($crawler->filter('#Profile > tr:nth-child(2) > td.DataletData')->text());
-		$scrieCredit = trimmy($crawler->filter('#Profile > tr:nth-child(3) > td.DataletData')->text());
-		$drieCredit = trimmy($crawler->filter('#Profile > tr:nth-child(4) > td.DataletData')->text());
-		$refundAmt = trimmy($crawler->filter('#Profile > tr:nth-child(5) > td.DataletData')->text());
-		$overpaymentAmt = trimmy($crawler->filter('#Profile > tr:nth-child(6) > td.DataletData')->text());
-		$metro->query("INSERT INTO dof_scrape_tc234 (
-						Borough_Code,
-						Tax_Block,
-						Tax_Lot,
-						building_class,
-						tax_class,
-						Unused_SCRIE_Credit,
-						Unused_DRIE_Credit,
-						refund_amount,
-						overpayment_amount) VALUES ('$row[boro]', '$row[block]', '$row[lot]', '$buildingClass', '$taxClass', '$scrieCredit', '$drieCredit', '$refundAmt', '$overpaymentAmt')");
+
+		$result = $crawler->filter('#datalet_div_7 .DataletData')->each(function (Crawler $node, $i) {
+			return $node->text();
+		});
+
+		if (empty($result)) continue;
+
+		$result = array_chunk($result, 3);
+
+		foreach ($result as $key => $value) {
+			echo $value[0];
+			echo $value[1];
+			echo $value[2];
+			echo "\n";
+		}
+
 		curl_multi_remove_handle($mh, $multiCurl[$k]);
 	}
 	$n = $n + $limiter;
